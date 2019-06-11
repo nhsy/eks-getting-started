@@ -5,6 +5,13 @@ resource "kubernetes_config_map" "aws_auth_configmap" {
     namespace = "kube-system"
   }
 
-  data = "${local.config_map_aws_auth}"
-
+  data {
+    mapRoles = <<CONFIGMAPAWSAUTH
+    - rolearn: ${aws_iam_role.demo-node.arn}
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+CONFIGMAPAWSAUTH
+  }
 }

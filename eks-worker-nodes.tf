@@ -115,7 +115,7 @@ resource "aws_launch_configuration" "demo" {
   image_id                    = "${data.aws_ami.eks-worker.id}"
   instance_type               = "${var.instance_type}"
   key_name                    = "${var.key_name}"
-  name_prefix                 = "${var.cluster_name}"
+  name_prefix                 = "${var.cluster_name}-"
   security_groups             = ["${aws_security_group.demo-node.id}"]
   user_data_base64            = "${base64encode(local.demo-node-userdata)}"
 
