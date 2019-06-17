@@ -37,7 +37,7 @@ resource "kubernetes_pod" "nginx" {
     }
   }
 
-  depends_on = ["local_file.kube_config", "kubernetes_config_map.aws_auth_configmap"]
+  depends_on = ["local_file.kube_config"]
 }
 
 resource "kubernetes_service" "nginx" {
@@ -81,10 +81,6 @@ variable "nginx_pod_name" {
 variable "nginx_pod_image" {
   default = "nginx:latest"
   type    = "string"
-}
-
-output "url" {
-  value = "${kubernetes_service.nginx.load_balancer_ingress.0.hostname}"
 }
 
 //locals {
