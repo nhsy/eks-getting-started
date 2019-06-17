@@ -37,7 +37,7 @@ resource "kubernetes_pod" "nginx" {
     }
   }
 
-  depends_on = ["local_file.kube_config"]
+  depends_on = ["local_file.kube_config", "kubernetes_config_map.aws_auth_configmap"]
 }
 
 resource "kubernetes_service" "nginx" {

@@ -12,7 +12,7 @@ variable "key_name" {
 
 variable "desired_nodes" {
   type    = "string"
-  default = 1
+  default = 2
 }
 
 variable "instance_type" {
@@ -22,12 +22,12 @@ variable "instance_type" {
 
 variable "min_nodes" {
   type    = "string"
-  default = 1
+  default = 2
 }
 
 variable "max_nodes" {
   type    = "string"
-  default = 1
+  default = 3
 }
 
 variable "region" {

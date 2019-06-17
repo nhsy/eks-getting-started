@@ -58,6 +58,11 @@ output "kubeconfig" {
   value = "${local.kubeconfig}"
 }
 
+output "kubeconfig_file" {
+  value = "${var.kube_config_file}"
+}
+
 output "local_ip" {
   value = "${local.workstation-external-cidr}"
 }
+
