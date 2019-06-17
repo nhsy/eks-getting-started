@@ -29,3 +29,13 @@ variable "max_nodes" {
   type    = "string"
   default = 1
 }
+
+variable "region" {
+  type = "string"
+  default = "us-east-2"
+}
+
+variable "kube_config_file" {
+  type = "string"
+  default = "~/.kube/config"
+}

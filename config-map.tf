@@ -14,4 +14,6 @@ resource "kubernetes_config_map" "aws_auth_configmap" {
         - system:nodes
 CONFIGMAPAWSAUTH
   }
+
+  depends_on = ["aws_autoscaling_group.demo", "local_file.kube_config",]
 }
