@@ -82,7 +82,3 @@ variable "nginx_pod_image" {
   default = "nginx:latest"
   type    = "string"
 }
-
-//locals {
-//  service_url = "${kubernetes_service.nginx.load_balancer_ingress.0.hostname}"
-//}
