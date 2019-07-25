@@ -36,25 +36,6 @@ resource "kubernetes_cluster_role_binding" "tiller" {
   }
 }
 
-# create RBAC cluster role binding
-//resource "kubernetes_cluster_role_binding" "rbac" {
-//  metadata {
-//    name = "istio-helm-binding"
-//  }
-//
-//  role_ref {
-//    api_group = "rbac.authorization.k8s.io"
-//    kind      = "ClusterRole"
-//    name      = "cluster-admin"
-//  }
-//
-//  subject {
-//    kind      = "ServiceAccount"
-//    name      = "default"
-//    namespace = "kube-system"
-//  }
-//}
-
 resource "helm_release" "istio_init" {
   repository = "${data.helm_repository.istio.name}"
   chart      = "istio-init"
@@ -62,22 +43,9 @@ resource "helm_release" "istio_init" {
   namespace  = "${kubernetes_namespace.istio_system.metadata.0.name}"
   wait       = true
 
-  //depends_on = ["kubernetes_cluster_role_binding.rbac", "kubernetes_cluster_role_binding.tiller"]
   depends_on = ["kubernetes_cluster_role_binding.tiller"]
   timeout    = "300"
 }
-
-//resource "null_resource" "delay" {
-//  triggers {
-//    after = "${helm_release.istio_init.id}"
-//  }
-//
-//  provisioner "local-exec" {
-//    command = "sleep 60"
-//  }
-//
-//  //depends_on = ["helm_release.istio_init"]
-//}
 
 resource "helm_release" "istio" {
   repository = "${data.helm_repository.istio.name}"
@@ -89,7 +57,7 @@ resource "helm_release" "istio" {
     "${file("files/values-istio-demo.yaml")}",
   ]
 
-  wait       = false
-  depends_on = ["helm_release.istio_init"]
+  wait       = true
+  depends_on = ["helm_release.istio_init", "kubernetes_cluster_role_binding.tiller"]
   timeout    = 600
 }
