@@ -22,6 +22,6 @@ output "local_ip" {
 }
 
 output "istio_ingress_gateway" {
-  value = "kubectl get svc istio-ingressgateway --namespace istio-system -o jsonpath={.status.loadBalancer.ingress[0].hostname} --kubeconfig ${local_file.kube_config.filename}"
+  value       = "kubectl get svc istio-ingressgateway --namespace istio-system -o jsonpath={.status.loadBalancer.ingress[0].hostname} --kubeconfig ${local_file.kube_config.filename}"
   description = "Istio ingress gateway"
 }

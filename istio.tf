@@ -7,33 +7,8 @@ resource "kubernetes_namespace" "istio_system" {
   metadata {
     name = "istio-system"
   }
-}
 
-resource "kubernetes_service_account" "tiller" {
-  metadata {
-    name      = "tiller"
-    namespace = "kube-system"
-  }
-
-  automount_service_account_token = true
-}
-
-resource "kubernetes_cluster_role_binding" "tiller" {
-  metadata {
-    name = "tiller-cluster-admin"
-  }
-
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "cluster-admin"
-  }
-
-  subject {
-    kind      = "ServiceAccount"
-    name      = "${kubernetes_service_account.tiller.metadata.0.name}"
-    namespace = "${kubernetes_service_account.tiller.metadata.0.namespace}"
-  }
+  depends_on = ["aws_autoscaling_group.eks-cluster"]
 }
 
 resource "helm_release" "istio_init" {
@@ -44,7 +19,21 @@ resource "helm_release" "istio_init" {
   wait       = true
 
   depends_on = ["kubernetes_cluster_role_binding.tiller"]
-  timeout    = "300"
+}
+
+###
+# add delay to allow istio crd to propagate
+###
+resource "null_resource" "delay" {
+  triggers {
+    after = "${helm_release.istio_init.id}"
+  }
+
+  provisioner "local-exec" {
+    command = "sleep 30"
+  }
+
+  depends_on = ["helm_release.istio_init"]
 }
 
 resource "helm_release" "istio" {
@@ -57,7 +46,6 @@ resource "helm_release" "istio" {
     "${file("files/values-istio-demo.yaml")}",
   ]
 
-  wait       = true
-  depends_on = ["helm_release.istio_init", "kubernetes_cluster_role_binding.tiller"]
-  timeout    = 600
+  wait       = false
+  depends_on = ["helm_release.istio_init", "null_resource.delay"]
 }
