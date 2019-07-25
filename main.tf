@@ -5,6 +5,19 @@
 *
 * See that guide for additional information.
 *
+* # Istio
+* Deploy the istio examples by running the following code:
+*  ```
+*  kubectl label namespace default istio-injection=enabled
+*  kubectl apply -f files/istio-helloworld.yaml
+*  kubectl apply -f files/istio-helloworld-gateway.yaml
+*  ```
+* Find the istio ingress gateway URL with the following code:
+* ```
+* kubectl get svc istio-ingressgateway --namespace istio-system -o jsonpath={.status.loadBalancer.ingress[0].hostname}
+* ```
+* Browse to http://[istio-ingressgateway]/hello
+*
 * # Parameters
 */
 
