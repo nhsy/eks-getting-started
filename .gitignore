@@ -7,6 +7,8 @@
 # Terraform state
 *.tfstate
 *.tfstate.*
+# Local terraform tfvars
+local.tfvars
 #terraform plan outputs
 *.out
 # Crash log files
@@ -17,6 +19,7 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+local.tfvars
 # Backup files
 *.bak
 *.old

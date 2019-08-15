@@ -7,7 +7,7 @@ resource "kubernetes_config_map" "aws_auth_configmap" {
 
   data {
     mapRoles = <<CONFIGMAPAWSAUTH
-    - rolearn: ${aws_iam_role.demo-node.arn}
+    - rolearn: ${aws_iam_role.eks-node.arn}
       username: system:node:{{EC2PrivateDNSName}}
       groups:
         - system:bootstrappers
@@ -15,5 +15,9 @@ resource "kubernetes_config_map" "aws_auth_configmap" {
 CONFIGMAPAWSAUTH
   }
 
-  depends_on = ["local_file.kube_config"]
+  depends_on = [
+    "local_file.kube_config",
+    "aws_eks_cluster.eks",
+    "aws_autoscaling_group.eks-cluster",
+  ]
 }

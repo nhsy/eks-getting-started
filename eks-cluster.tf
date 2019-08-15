@@ -5,8 +5,8 @@
 #  * EKS Cluster
 #
 
-resource "aws_iam_role" "demo-cluster" {
-  name = "${var.cluster_name}-cluster"
+resource "aws_iam_role" "eks-cluster" {
+  name = "${local.cluster_name}"
 
   assume_role_policy = <<POLICY
 {
@@ -24,20 +24,20 @@ resource "aws_iam_role" "demo-cluster" {
 POLICY
 }
 
-resource "aws_iam_role_policy_attachment" "demo-cluster-AmazonEKSClusterPolicy" {
+resource "aws_iam_role_policy_attachment" "eks-cluster-AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = "${aws_iam_role.demo-cluster.name}"
+  role       = "${aws_iam_role.eks-cluster.name}"
 }
 
-resource "aws_iam_role_policy_attachment" "demo-cluster-AmazonEKSServicePolicy" {
+resource "aws_iam_role_policy_attachment" "eks-cluster-AmazonEKSServicePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
-  role       = "${aws_iam_role.demo-cluster.name}"
+  role       = "${aws_iam_role.eks-cluster.name}"
 }
 
-resource "aws_security_group" "demo-cluster" {
-  name        = "terraform-eks-demo-cluster"
+resource "aws_security_group" "eks-cluster" {
+  name        = "{local.cluster_name}-sg"
   description = "Cluster communication with worker nodes"
-  vpc_id      = "${aws_vpc.demo.id}"
+  vpc_id      = "${aws_vpc.this.id}"
 
   egress {
     from_port   = 0
@@ -47,42 +47,42 @@ resource "aws_security_group" "demo-cluster" {
   }
 
   tags = {
-    Name = "${var.cluster_name}"
+    Name = "${local.cluster_name}"
   }
 }
 
-resource "aws_security_group_rule" "demo-cluster-ingress-node-https" {
+resource "aws_security_group_rule" "eks-cluster-ingress-node-https" {
   description              = "Allow pods to communicate with the cluster API Server"
   from_port                = 443
   protocol                 = "tcp"
-  security_group_id        = "${aws_security_group.demo-cluster.id}"
-  source_security_group_id = "${aws_security_group.demo-node.id}"
+  security_group_id        = "${aws_security_group.eks-cluster.id}"
+  source_security_group_id = "${aws_security_group.eks-node.id}"
   to_port                  = 443
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "demo-cluster-ingress-workstation-https" {
+resource "aws_security_group_rule" "eks-cluster-ingress-workstation-https" {
   cidr_blocks       = ["${local.workstation-external-cidr}"]
   description       = "Allow workstation to communicate with the cluster API Server"
   from_port         = 443
   protocol          = "tcp"
-  security_group_id = "${aws_security_group.demo-cluster.id}"
+  security_group_id = "${aws_security_group.eks-cluster.id}"
   to_port           = 443
   type              = "ingress"
 }
 
-resource "aws_eks_cluster" "demo" {
-  name     = "${var.cluster_name}"
-  role_arn = "${aws_iam_role.demo-cluster.arn}"
+resource "aws_eks_cluster" "eks" {
+  name     = "${local.cluster_name}"
+  role_arn = "${aws_iam_role.eks-cluster.arn}"
 
   vpc_config {
-    security_group_ids = ["${aws_security_group.demo-cluster.id}"]
-    subnet_ids         = ["${aws_subnet.demo.*.id}"]
+    security_group_ids = ["${aws_security_group.eks-cluster.id}"]
+    subnet_ids         = ["${aws_subnet.this.*.id}"]
   }
 
   depends_on = [
-    "aws_iam_role_policy_attachment.demo-cluster-AmazonEKSClusterPolicy",
-    "aws_iam_role_policy_attachment.demo-cluster-AmazonEKSServicePolicy",
+    "aws_iam_role_policy_attachment.eks-cluster-AmazonEKSClusterPolicy",
+    "aws_iam_role_policy_attachment.eks-cluster-AmazonEKSServicePolicy",
   ]
 }
 
@@ -101,7 +101,7 @@ metadata:
   namespace: kube-system
 data:
   mapRoles: |
-    - rolearn: ${aws_iam_role.demo-node.arn}
+    - rolearn: ${aws_iam_role.eks-node.arn}
       username: system:node:{{EC2PrivateDNSName}}
       groups:
         - system:bootstrappers
@@ -114,8 +114,8 @@ CONFIGMAPAWSAUTH
 apiVersion: v1
 clusters:
 - cluster:
-    server: ${aws_eks_cluster.demo.endpoint}
-    certificate-authority-data: ${aws_eks_cluster.demo.certificate_authority.0.data}
+    server: ${aws_eks_cluster.eks.endpoint}
+    certificate-authority-data: ${aws_eks_cluster.eks.certificate_authority.0.data}
   name: kubernetes
 contexts:
 - context:
@@ -134,6 +134,6 @@ users:
       args:
         - "token"
         - "-i"
-        - "${var.cluster_name}"
+        - "${local.cluster_name}"
 KUBECONFIG
 }
