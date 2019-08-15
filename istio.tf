@@ -8,7 +8,11 @@ resource "kubernetes_namespace" "istio_system" {
     name = "istio-system"
   }
 
-  depends_on = ["aws_autoscaling_group.eks-cluster"]
+  depends_on = [
+    "aws_eks_cluster.eks",
+    "aws_autoscaling_group.eks-cluster",
+    "kubernetes_config_map.aws_auth_configmap",
+  ]
 }
 
 resource "helm_release" "istio_init" {
@@ -18,7 +22,10 @@ resource "helm_release" "istio_init" {
   namespace  = "${kubernetes_namespace.istio_system.metadata.0.name}"
   wait       = true
 
-  depends_on = ["kubernetes_cluster_role_binding.tiller"]
+  depends_on = [
+    "kubernetes_cluster_role_binding.tiller",
+    "kubernetes_namespace.istio_system",
+  ]
 }
 
 ###
@@ -46,6 +53,6 @@ resource "helm_release" "istio" {
     "${file("files/values-istio-demo.yaml")}",
   ]
 
-  wait       = false
+  wait       = true
   depends_on = ["helm_release.istio_init", "null_resource.delay"]
 }

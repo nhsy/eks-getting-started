@@ -5,6 +5,7 @@ resource "kubernetes_service_account" "tiller" {
   }
 
   automount_service_account_token = true
+  depends_on                      = ["aws_eks_cluster.eks"]
 }
 
 resource "kubernetes_cluster_role_binding" "tiller" {
