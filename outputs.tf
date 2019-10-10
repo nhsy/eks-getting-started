@@ -6,22 +6,36 @@
 //  description = "Contents of aws-auth config map"
 //}
 //
-//output "kubeconfig" {
-//  value       = "${local.kubeconfig}"
-//  description = "Contents of kubeconfig"
-//}
-
-output "kubeconfig_file" {
-  value       = "${var.kube_config_file}"
-  description = "Kubeconfig file path"
+output "kubeconfig" {
+  value       = local_file.kube_config.filename
+  description = "kubeconfig filename"
 }
 
-output "local_ip" {
-  value       = "${local.workstation-external-cidr}"
-  description = "Workstation public ip address"
+output "endpoint" {
+  value       = aws_eks_cluster.eks.endpoint
+  description = "The eks cluster endpoint"
 }
 
-output "istio_ingress_gateway" {
-  value       = "kubectl get svc istio-ingressgateway --namespace istio-system -o jsonpath={.status.loadBalancer.ingress[0].hostname} --kubeconfig ${local_file.kube_config.filename}"
-  description = "Istio ingress gateway"
+output "version" {
+  value = aws_eks_cluster.eks.version
+}
+
+output "certificate-authority" {
+  value = aws_eks_cluster.eks.certificate_authority[0].data
+}
+
+output "id" {
+  value = aws_eks_cluster.eks.id
+}
+
+output "arn" {
+  value = aws_eks_cluster.eks.arn
+}
+
+output "role_arn" {
+  value = aws_eks_cluster.eks.role_arn
+}
+
+output "name" {
+  value = aws_eks_cluster.eks.name
 }
